@@ -20,7 +20,7 @@ public class PlayerService {
 		int id = generateID(player);
 		player.setPlayerID(id);
 		repository.save(player);
-		return "Created Player " + player.getName()+" with ID:" + player.getPlayerID();
+		return "Added " + player.getName()+" With ID " + player.getPlayerID();
 	}
 	
 	private int generateID(Player player) {
@@ -82,7 +82,7 @@ public class PlayerService {
 	
 	public String deletePlayer(int id) {
 		repository.deleteById(id);
-		return "Player deleted with ID" + id;
+		return "Player deleted with  " + id;
 	}
 
 	public String updateScores(List<Match> matches) {
