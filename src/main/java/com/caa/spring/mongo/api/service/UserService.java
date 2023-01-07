@@ -16,8 +16,6 @@ public class UserService {
 	private UserRepository repository;
 	
 	public Optional<User> authenticateUser(User user){
-		System.out.println("Username:" +user.getUsername());
-		System.out.println("Password:" +user.getPassword());
 		Optional <User> myUser = repository.findById(user.getUsername());
 		if(myUser.isPresent() ){
 			
