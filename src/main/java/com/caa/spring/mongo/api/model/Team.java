@@ -17,9 +17,11 @@ public class Team {
 	private double pct;
 	private int pointsFor;
 	private int pointsAgainst;
+	private int winPoints;
+	private int lossPoints;
 	private String division;
 	
-	public Team(String id, String name, int wins, int losses,int ties, double pct, int pointsFor, int pointsAgainst, String division) {
+	public Team(String id, String name, int wins, int losses,int ties, double pct, int winPoints, int lossPoints, int pointsFor, int pointsAgainst, String division) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -27,6 +29,8 @@ public class Team {
 		this.losses = losses;
 		this.ties = ties;
 		this.pct = pct;
+		this.winPoints = winPoints;
+		this.lossPoints = lossPoints;
 		this.pointsFor = pointsFor;
 		this.pointsAgainst = pointsAgainst;
 		this.division = division;
@@ -61,6 +65,18 @@ public class Team {
 	}
 	public void setTies(int ties) {
 		this.ties = ties;
+	}
+	public int getWinPoints() {
+		return winPoints;
+	}
+	public void setWinPoints(int winPoints) {
+		this.winPoints = winPoints;
+	}
+	public int getLossPoints() {
+		return lossPoints;
+	}
+	public void setLossPoints(int lossPoints) {
+		this.lossPoints = lossPoints;
 	}
 	public int getPointsFor() {
 		return pointsFor;

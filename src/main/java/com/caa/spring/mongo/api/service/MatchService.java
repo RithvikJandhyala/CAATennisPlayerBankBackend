@@ -38,8 +38,18 @@ public class MatchService {
 			{
 				Player p1 = playerService.findPlayer(match.getPlayer1ID(),players);
 				Player p2 = playerService.findPlayer(match.getPlayer2ID(),players);
-				match.setPlayer1Name(p1.getName());
-				match.setPlayer2Name(p2.getName());				
+				if(p1==null) {
+					match.setPlayer1Name("No Show");
+					match.setPlayer2Name(p2.getName());	
+				}
+				else if(p2==null) {
+					match.setPlayer1Name(p1.getName());
+					match.setPlayer2Name("No Show");	
+				}
+				else {
+					match.setPlayer1Name(p1.getName());
+					match.setPlayer2Name(p2.getName());	
+				}
 			}
 		}
 		matches.sort(Comparator.comparing(Match::getDate));
@@ -51,11 +61,18 @@ public class MatchService {
 		return "match saved";
 	}
 	private boolean isValidMatch(Match match) {
-		if(match.getPlayer1ID()== 0 || match.getPlayer2ID() == 0) {
-			System.out.println("Invalid Match");
+		if(match.getPlayer1ID()== 0 && match.getPlayer2ID() == 0) {
+			System.out.println("No Show vs No Show");
 			return false;
 		}
+		if(match.getPlayer1ID()== 0 && match.getPlayer2ID()!=0) {
+			return true;
+		}
+		if(match.getPlayer1ID()!= 0 && match.getPlayer2ID()==0) {
+			return true;
+		}
 		return true;
+		
 	}
 	public String saveMatches(List<Match> matches) {
 		int homeTeamSummaryPoints = 0;
@@ -66,12 +83,17 @@ public class MatchService {
 		int homeTeamStandingLosses = 0;
 		double  homeTeamStandingPct = 0;
 		int homeTeamStandingTies = 0;
+		int homeTeamStandingWinPoints = 0;
+		int homeTeamStandingLossPoints = 0;
 		int homeTeamStandingPointsFor = 0;
 		int homeTeamStandingPointsAgainst = 0;
+		
 		int awayTeamStandingWins = 0;
 		int awayTeamStandingLosses = 0;
 		double awayTeamStandingPct = 0;
 		int awayTeamStandingTies = 0;
+		int awayTeamStandingWinPoints = 0;
+		int awayTeamStandingLossPoints = 0;
 		int awayTeamStandingPointsFor = 0;
 		int awayTeamStandingPointsAgainst = 0;
 		List<Match> validMatches = new ArrayList<Match>() ;
@@ -161,7 +183,9 @@ public class MatchService {
 
 				
 			}
-			homeTeamStanding.setPointsFor(homeTeamStanding.getPointsFor() + homeTeamStandingPointsFor);
+			homeTeamStanding.setWinPoints(homeTeamStanding.getWinPoints() + homeTeamSummaryPoints);
+			homeTeamStanding.setLossPoints(homeTeamStanding.getLossPoints() + awayTeamSummaryPoints);
+			homeTeamStanding.setPointsFor(homeTeamStanding.getPointsFor() + homeTeamSummaryPoints);
 			homeTeamStanding.setPointsAgainst(homeTeamStanding.getPointsAgainst() + homeTeamStandingPointsAgainst) ;
 			teamRepository.save(homeTeamStanding);
 		}
@@ -169,7 +193,7 @@ public class MatchService {
 			if((homeTeamStandingWins+ homeTeamStandingLosses + homeTeamStandingTies) !=0) {
 				homeTeamStandingPct = homeTeamStandingWins/(homeTeamStandingWins+ homeTeamStandingLosses + homeTeamStandingTies) * 100;
 			}			
-			Team homeTeamStanding = new Team(homeTeam+"_"+division,homeTeam,homeTeamStandingWins,homeTeamStandingLosses,homeTeamStandingTies,homeTeamStandingPct,homeTeamStandingPointsFor,homeTeamStandingPointsAgainst,division);
+			Team homeTeamStanding = new Team(homeTeam+"_"+division,homeTeam,homeTeamStandingWins,homeTeamStandingLosses,homeTeamStandingTies,homeTeamStandingPct,homeTeamSummaryPoints,awayTeamSummaryPoints,homeTeamStandingPointsFor,homeTeamStandingPointsAgainst,division);
 			teamRepository.save(homeTeamStanding);
 		}
 		
@@ -182,7 +206,9 @@ public class MatchService {
 			{
 				awayTeamStanding.setPct((double)awayTeamStanding.getWins()/(awayTeamStanding.getWins() + awayTeamStanding.getLosses() + awayTeamStanding.getTies()) * 100);
 				System.out.println((awayTeamStanding.getWins()/(awayTeamStanding.getWins() + awayTeamStanding.getLosses() + awayTeamStanding.getTies()) * 100));
-			}				
+			}
+			awayTeamStanding.setWinPoints(awayTeamStanding.getWinPoints() + awayTeamSummaryPoints);
+			awayTeamStanding.setLossPoints(awayTeamStanding.getLossPoints() + homeTeamSummaryPoints);
 			awayTeamStanding.setPointsFor(awayTeamStanding.getPointsFor() + awayTeamStandingPointsFor);
 			awayTeamStanding.setPointsAgainst(awayTeamStanding.getPointsAgainst()+awayTeamStandingPointsAgainst);
 			teamRepository.save(awayTeamStanding);
@@ -191,7 +217,7 @@ public class MatchService {
 			if((awayTeamStandingWins+ awayTeamStandingLosses + awayTeamStandingTies) !=0) {
 				awayTeamStandingPct = awayTeamStandingWins/(awayTeamStandingWins+ awayTeamStandingLosses + awayTeamStandingTies) * 100;
 			}
-			Team awayTeamStanding = new Team(awayTeam+"_"+division,awayTeam,awayTeamStandingWins,awayTeamStandingLosses,awayTeamStandingTies,awayTeamStandingPct,awayTeamStandingPointsFor,awayTeamStandingPointsAgainst,division);
+			Team awayTeamStanding = new Team(awayTeam+"_"+division,awayTeam,awayTeamStandingWins,awayTeamStandingLosses,awayTeamStandingTies,awayTeamStandingPct,awayTeamSummaryPoints,homeTeamSummaryPoints,awayTeamStandingPointsFor,awayTeamStandingPointsAgainst,division);
 			teamRepository.save(awayTeamStanding);
 		}
 		return "Matches, Mathes Summary and Team Standings Saved";

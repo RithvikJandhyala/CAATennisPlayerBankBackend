@@ -91,9 +91,16 @@ public class PlayerService {
 		{
 			Player p1 = findPlayer(match.getPlayer1ID(),players);
 			Player p2 = findPlayer(match.getPlayer2ID(),players);
-			if(p1 == null || p2 == null) {
+			if(p1 == null && p2 == null) {
 				System.out.println( "Match not valid");
-			}			
+			}
+			else if(p1 == null && p2 != null) {
+				p2.setWins(p2.getWins() + 1);
+			}		
+			else if(p1 != null && p2 == null) {
+				System.out.println( "Match not valid");
+				p1.setWins(p1.getWins() + 1);
+			}		
 			else if(match.getPlayer1Score()> match.getPlayer2Score())
 			{
 				p1.setWins(p1.getWins() + 1);
