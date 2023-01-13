@@ -37,19 +37,16 @@ public class MatchService {
 			for (Match match : matches) 
 			{
 				Player p1 = playerService.findPlayer(match.getPlayer1ID(),players);
-				Player p2 = playerService.findPlayer(match.getPlayer2ID(),players);
-				if(p1==null) {
+				Player p2 = playerService.findPlayer(match.getPlayer2ID(),players);	
+				if(p1 == null) 
 					match.setPlayer1Name("No Show");
-					match.setPlayer2Name(p2.getName());	
-				}
-				else if(p2==null) {
+				else
 					match.setPlayer1Name(p1.getName());
-					match.setPlayer2Name("No Show");	
-				}
-				else {
-					match.setPlayer1Name(p1.getName());
-					match.setPlayer2Name(p2.getName());	
-				}
+				
+				if(p2 == null) 
+					match.setPlayer2Name("No Show");
+				else
+					match.setPlayer2Name(p2.getName());				
 			}
 		}
 		matches.sort(Comparator.comparing(Match::getDate));

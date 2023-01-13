@@ -82,7 +82,9 @@ public class Player {
 	public void setLosses(int losses) {
 		this.losses = losses;
 	}
+	@Override
 	public String toString() {
-		return "Player:"+playerID + ":" + wins ;
+		return "Player [playerID=" + playerID + ", name=" + name + ", school=" + school + ", division=" + division
+				+ ", playerType=" + playerType + ", rank=" + rank + ", wins=" + wins + ", losses=" + losses + "]";
 	}
 }

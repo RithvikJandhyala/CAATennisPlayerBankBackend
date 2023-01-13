@@ -68,7 +68,8 @@ public class PlayerService {
 	
 
 	public List<Player> getPlayers(){
-		return repository.findAll(Sort.by(Sort.Direction.DESC, "wins"));
+		//return repository.findAll(Sort.by(Sort.Direction.DESC, "wins"));
+		return repository.findAll(Sort.by(Sort.Direction.ASC, "playerID"));
 	}
 			
 	public List<Player> getPlayersBySchoolAndDivisionAndPlayerType(String school, String division, String playerType){
