@@ -1,10 +1,14 @@
 package com.caa.spring.mongo.api.model;
 import org.springframework.data.annotation.Id;
-//import jakarta.annotation.
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@ToString
 
 @Document(collection = "Team")
 public class Team {	
@@ -17,8 +21,8 @@ public class Team {
 	private double pct;
 	private int pointsFor;
 	private int pointsAgainst;
-	private int winPoints;
-	private int lossPoints;
+	private int winPoints = 0;
+	private int lossPoints = 0;
 	private String division;
 	
 	public Team(String id, String name, int wins, int losses,int ties, double pct, int winPoints, int lossPoints, int pointsFor, int pointsAgainst, String division) {

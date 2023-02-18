@@ -1,5 +1,5 @@
 package com.caa.spring.mongo.api.service;
-
+import java.util.Comparator;
 import java.util.HashMap;
 import org.springframework.data.domain.Sort;
 import java.util.List;
@@ -53,16 +53,18 @@ public class PlayerService {
 		String school = player.getSchool();
 		
 		List <Player> players = repository.findBySchoolAndDivisionAndPlayerType(school, division, playerType);
-		int count = players.size();
-		System.out.println("count:" + count);
-		id+= count;
-		System.out.println("school"+school + "D"+ division+"PT"+playerType);
-		
-		id+= schoolMap.get(school);
-		id+= divisionMap.get(division);
-		id+= playerTypeMap.get(playerType);
-		System.out.println("ID Generated:"+id);
-		
+		if(players.size() == 0) {
+			id+= schoolMap.get(school);
+			id+= divisionMap.get(division);
+			id+= playerTypeMap.get(playerType);
+		}
+		else {
+			Player maxIDPlayer = players.stream()
+	                .max(Comparator.comparingInt(Player::getPlayerID))
+	                .get();
+			int maxID = maxIDPlayer.getPlayerID();
+			id = maxID +1;
+		}		
 		return id;
 	}
 	
@@ -71,7 +73,16 @@ public class PlayerService {
 		//return repository.findAll(Sort.by(Sort.Direction.DESC, "wins"));
 		return repository.findAll(Sort.by(Sort.Direction.ASC, "playerID"));
 	}
-			
+	public List<Player> getPlayersByDivision(String division){
+		if(division.equals("All Divisions")){
+			return getPlayers();
+		}
+		else {
+			List<Player> playersByDivision = repository.findByDivision(division);
+			playersByDivision.sort(Comparator.comparing(Player	::getPlayerID));
+			return playersByDivision;
+		}
+	}		
 	public List<Player> getPlayersBySchoolAndDivisionAndPlayerType(String school, String division, String playerType){
 		return repository.findBySchoolAndDivisionAndPlayerType(school, division, playerType);
 	}

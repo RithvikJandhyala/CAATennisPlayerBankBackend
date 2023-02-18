@@ -49,6 +49,11 @@ public class TennisManagementController {
 	public List<Player> getPlayersBySchoolAndDivisionAndPlayerType(@PathVariable String school, @PathVariable String division, @PathVariable String playerType){
 		return playerService.getPlayersBySchoolAndDivisionAndPlayerType(school,division,playerType);
 	}
+	@GetMapping("/findPlayersByDivision/{division}")
+	public List<Player> getPlayersByDivision(@PathVariable String division){
+		return playerService.getPlayersByDivision(division);
+	}
+	
 	
 	@GetMapping("/findAllPlayers/{id}")
 	public Optional<Player> getPlayer(@PathVariable int id){
@@ -59,10 +64,18 @@ public class TennisManagementController {
 	public List<Match> getMatches(){
 		return matchService.getMatches();
 	}
+	@GetMapping("/findAllMatches/{division}")
+	public List<Match> getMatchesByDivision(@PathVariable String division){
+		return matchService.getMatchesByDivision(division);
+	}
 	
 	@GetMapping("/findAllMatchDaySummary")
 	public List<MatchDaySummary> getMatchDaySummary(){
 		return matchService.getMatchDaySummary();
+	}
+	@GetMapping("/findAllMatchDaySummary/{division}")
+	public List<MatchDaySummary> getMatchDaySummaryByDivision(@PathVariable String division){
+		return matchService.getMatchDaySummaryByDivision(division);
 	}
 	
 	@GetMapping("/findTeamStanding")
@@ -73,6 +86,16 @@ public class TennisManagementController {
 	@PostMapping("/addTeam")
 	public String saveTeam(@RequestBody Team team) {
 		return matchService.saveTeam(team);
+	}
+	
+	@GetMapping("/findTeamStanding/{division}/{name}")
+	public List<Team> getTeamStandingByDivisionAndName(@PathVariable String division, @PathVariable String name){
+		return matchService.getTeamStandingByDivisionAndName(division,name);
+	}
+	
+	@GetMapping("/findTeamStanding/{division}")
+	public List<Team> getTeamStandingByDivision(@PathVariable String division){
+		return matchService.getTeamStandingByDivision(division);
 	}
 	
 	@DeleteMapping("/delete/{id}")

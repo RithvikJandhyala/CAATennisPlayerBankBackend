@@ -1,6 +1,6 @@
 package com.caa.spring.mongo.api.service;
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +29,9 @@ public class MatchService {
 	//gets matches with player name populated
 	public List<Match> getMatches(){
 		List<Match> matches = repository.findAll(Sort.by(Sort.Direction.ASC, "matchDate"));
+		return getMatchesDetails(matches);
+	}
+	private List<Match> getMatchesDetails(List<Match> matches){
 		if(matches.size() == 0) {
 			return matches;
 		}
@@ -52,6 +55,15 @@ public class MatchService {
 		matches.sort(Comparator.comparing(Match::getDate));
 		return matches;
 	}
+	public List<Match> getMatchesByDivision(String division){
+		if(division.equals("All Divisions")) {
+			return getMatches();
+		}
+		else {
+			List<Match> matchesByDivision = repository.findMatchByDivision(division);
+			return getMatchesDetails(matchesByDivision);
+		}
+	}
 	
 	public String saveMatch(Match match) {
 		repository.save(match);
@@ -71,6 +83,22 @@ public class MatchService {
 		return true;
 		
 	}
+	private long getMaxMatchID(){
+		long id;
+		if(repository.count() == 0) {
+			id=0;
+		}
+		else {
+			List<Match> matches = repository.findAll();
+			Match maxIDMatch = matches.stream()
+	                .max(Comparator.comparingLong(Match::getId))
+	                .get();
+			long maxID = maxIDMatch.getId();
+			id = maxID;
+		}
+		return id;
+		
+	}
 	public String saveMatches(List<Match> matches) {
 		int homeTeamSummaryPoints = 0;
 		int awayTeamSummaryPoints = 0;
@@ -80,8 +108,6 @@ public class MatchService {
 		int homeTeamStandingLosses = 0;
 		double  homeTeamStandingPct = 0;
 		int homeTeamStandingTies = 0;
-		int homeTeamStandingWinPoints = 0;
-		int homeTeamStandingLossPoints = 0;
 		int homeTeamStandingPointsFor = 0;
 		int homeTeamStandingPointsAgainst = 0;
 		
@@ -89,29 +115,28 @@ public class MatchService {
 		int awayTeamStandingLosses = 0;
 		double awayTeamStandingPct = 0;
 		int awayTeamStandingTies = 0;
-		int awayTeamStandingWinPoints = 0;
-		int awayTeamStandingLossPoints = 0;
 		int awayTeamStandingPointsFor = 0;
 		int awayTeamStandingPointsAgainst = 0;
-		List<Match> validMatches = new ArrayList<Match>() ;
+		HashMap<Integer, Match> validMatches = new HashMap<Integer, Match>();
 		
-		long currentCount = repository.count();
+		long currentCount = getMaxMatchID();
 		for (int i =0; i < matches.size();i++) {
 			if(isValidMatch(matches.get(i))) {
-				validMatches.add(matches.get(i));
+				validMatches.put(i,matches.get(i));
 			}
 		}
 		if(validMatches.size() == 0) {
 			return "All Invalid Matches";
 		}
-		for (int i =0; i < validMatches.size();i++) {
-			
-			currentCount++;
-			validMatches.get(i).setId(currentCount);
-			System.out.println(validMatches.get(i));
-			if(i == 0)
+		
+		for (HashMap.Entry<Integer, Match> validMatch : validMatches.entrySet()) {
+		    int seq = validMatch.getKey();
+		    Match match = validMatch.getValue();
+		    currentCount++;
+		    match.setId(currentCount);
+		    if(seq == 0)
 			{
-					if(validMatches.get(i).getPlayer1Score() > validMatches.get(0).getPlayer2Score()) {
+					if(match.getPlayer1Score() > match.getPlayer2Score()) {
 						homeTeamSummaryPoints +=2;
 					}
 					else {
@@ -120,23 +145,28 @@ public class MatchService {
 				
 			}
 			else {
-				if(validMatches.get(i).getPlayer1Score() > validMatches.get(i).getPlayer2Score()) {
+				if(match.getPlayer1Score() > match.getPlayer2Score()) {
 					homeTeamSummaryPoints++;
 				}
 				else {
 					awayTeamSummaryPoints++;
 				} 
 			}
-			
 		}
-		//save Matches
-		repository.saveAll(validMatches);
+		
+	
+		repository.saveAll(validMatches.values());
+		
 		//Save Match Summary
-		String homeTeam = validMatches.get(0).getHomeTeam();
-		String awayTeam =  validMatches.get(0).getAwayTeam();
-		String division = validMatches.get(0).getDivision();
-		String matchDate = validMatches.get(0).getMatchDate();
-		MatchDaySummary matchDaySummary= new MatchDaySummary( validMatches.get(0).getId(),  homeTeam, homeTeamSummaryPoints, awayTeam ,  awayTeamSummaryPoints,
+		//get first match in the list
+		Match firstMatch = validMatches.get(validMatches.keySet().toArray()[0]);
+		String homeTeam = firstMatch.getHomeTeam();
+		String awayTeam =  firstMatch.getAwayTeam();
+		String division = firstMatch.getDivision();
+		String matchDate = firstMatch.getMatchDate();
+		long matchID = firstMatch.getId();
+		
+		MatchDaySummary matchDaySummary= new MatchDaySummary( matchID,  homeTeam, homeTeamSummaryPoints, awayTeam ,  awayTeamSummaryPoints,
 				division, matchDate );
 		matchDaySummaryRepository.save(matchDaySummary);
 		
@@ -225,9 +255,32 @@ public class MatchService {
 		matchesSummary.sort(Comparator.comparing(MatchDaySummary	::getDate));
 		return matchesSummary;
 	}
+	public List<MatchDaySummary> getMatchDaySummaryByDivision(String division){
+		if(division.equals("All Divisions")) {
+			return getMatchDaySummary();
+		}
+		else {
+			List<MatchDaySummary> matchesSummaryByDivision = matchDaySummaryRepository.findMatchDaySummaryByDivision(division);
+			matchesSummaryByDivision.sort(Comparator.comparing(MatchDaySummary	::getDate));
+			return matchesSummaryByDivision;
+		}
+	}
 
 	public List<Team> getTeamStanding() {
 		return teamRepository.findAll();
+	}
+	
+	public List<Team> getTeamStandingByDivisionAndName(String division,String name){
+		return teamRepository.findTeamStandingByDivisionAndName(division,name);
+	}
+	
+	public List<Team> getTeamStandingByDivision(String division){
+		if(division.equals("All Divisions")) {
+			return getTeamStanding();
+		}
+		else {
+			return teamRepository.findTeamStandingByDivision(division);
+		}
 	}
 
 	public String saveTeam(Team team) {
