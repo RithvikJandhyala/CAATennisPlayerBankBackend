@@ -8,8 +8,7 @@ import org.springframework.data.annotation.Id;
 //import jakarta.annotation.
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+
 
 @Document(collection = "Match")
 public class Match {	
@@ -26,8 +25,9 @@ public class Match {
 	private String awayTeam;
 	private String player1Name;
 	private String player2Name;
+	private long matchSummaryID;
 	public Match(long id, int player1ID, int player2ID, int player1Score, int player2Score, String division,
-			String matchType, String matchDate, String homeTeam, String awayTeam) {
+			String matchType, String matchDate, String homeTeam, String awayTeam, long matchSummaryID) {
 		super();
 		this.id = id;
 		this.player1ID = player1ID;
@@ -39,6 +39,7 @@ public class Match {
 		this.matchDate = matchDate;
 		this.homeTeam = homeTeam;
 		this.awayTeam = awayTeam;
+		this.matchSummaryID = matchSummaryID;
 	}
 	public long getId() {
 		return id;
@@ -130,6 +131,12 @@ public class Match {
 	public void setPlayer2Name(String player2Name) {
 		this.player2Name = player2Name;
 		
+	}
+	public long getMatchSummaryID() {
+		return matchSummaryID;
+	}
+	public void setMatchSummaryID(long matchSummaryID) {
+		this.matchSummaryID = matchSummaryID;
 	}
 	
 	

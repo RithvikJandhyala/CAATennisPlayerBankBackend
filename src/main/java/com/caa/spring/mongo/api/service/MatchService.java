@@ -12,6 +12,7 @@ import com.caa.spring.mongo.api.model.MatchDaySummary;
 import com.caa.spring.mongo.api.model.Player;
 import com.caa.spring.mongo.api.model.Team;
 import com.caa.spring.mongo.api.repository.MatchRepository;
+import com.caa.spring.mongo.api.repository.PlayerRepository;
 import com.caa.spring.mongo.api.repository.TeamRepository;
 import com.caa.spring.mongo.api.repository.MatchDaySummaryRepository;
 
@@ -23,6 +24,8 @@ public class MatchService {
 	private MatchDaySummaryRepository matchDaySummaryRepository;
 	@Autowired
 	private TeamRepository teamRepository;
+	@Autowired
+	private PlayerRepository playerRepository;
 	@Autowired
 	private PlayerService playerService;
 	
@@ -70,6 +73,22 @@ public class MatchService {
 		return "match saved";
 	}
 	private boolean isValidMatch(Match match) {
+		// Make sure that the right division is set for the matches
+		int divisionID = match.getPlayer1ID() % 1000;
+		
+		if(divisionID > 0 && divisionID <= 250) {
+			match.setDivision("JH Boys");
+		}
+		else if(divisionID > 250 && divisionID <= 500) {
+			match.setDivision("JH Girls");
+		}
+		else if(divisionID > 500 && divisionID <= 750) {
+			match.setDivision("HS Boys");
+		}
+		else if(divisionID > 750 && divisionID <= 999) {
+			match.setDivision("HS Girls");
+		}
+					
 		if(match.getPlayer1ID()== 0 && match.getPlayer2ID() == 0) {
 			System.out.println("No Show vs No Show");
 			return false;
@@ -128,12 +147,15 @@ public class MatchService {
 		if(validMatches.size() == 0) {
 			return "All Invalid Matches";
 		}
+	
+		
 		
 		for (HashMap.Entry<Integer, Match> validMatch : validMatches.entrySet()) {
 		    int seq = validMatch.getKey();
 		    Match match = validMatch.getValue();
 		    currentCount++;
 		    match.setId(currentCount);
+		    
 		    if(seq == 0)
 			{
 					if(match.getPlayer1Score() > match.getPlayer2Score()) {
@@ -154,18 +176,17 @@ public class MatchService {
 			}
 		}
 		
-	
-		repository.saveAll(validMatches.values());
-		
-		//Save Match Summary
-		//get first match in the list
 		Match firstMatch = validMatches.get(validMatches.keySet().toArray()[0]);
 		String homeTeam = firstMatch.getHomeTeam();
 		String awayTeam =  firstMatch.getAwayTeam();
 		String division = firstMatch.getDivision();
 		String matchDate = firstMatch.getMatchDate();
 		long matchID = firstMatch.getId();
-		
+		for (HashMap.Entry<Integer, Match> validMatch : validMatches.entrySet()) {
+		    Match match = validMatch.getValue();
+		    match.setMatchSummaryID(matchID);
+		}
+		repository.saveAll(validMatches.values());		
 		MatchDaySummary matchDaySummary= new MatchDaySummary( matchID,  homeTeam, homeTeamSummaryPoints, awayTeam ,  awayTeamSummaryPoints,
 				division, matchDate );
 		matchDaySummaryRepository.save(matchDaySummary);
@@ -286,5 +307,149 @@ public class MatchService {
 	public String saveTeam(Team team) {
 		teamRepository.save(team);
 		return "Team Saved";
+	}
+	public List<Match> deleteMatchSummary(int id) {
+		//Find Match Details
+		Optional<MatchDaySummary> matchSum= matchDaySummaryRepository.findById(id);
+		if(matchSum.isPresent() ){	
+			MatchDaySummary matchSummary = matchSum.get();
+			List<Match> matches = repository.findMatchByMatchSummaryID(matchSummary.getId());
+			//reset player scores
+			resetPlayerScores(matches);
+			//reset team standings
+			resetTeamStandings(matchSummary);
+			//delete matches and match summary
+			repository.deleteAll(matches);
+			matchDaySummaryRepository.delete(matchSummary);
+			return matches;
+			
+		}
+		return null;
+		
+	}
+	public String clear() {
+		repository.deleteAll();
+		matchDaySummaryRepository.deleteAll();
+		return "ALL MATCHES CLEARED";
+	}
+	private void resetPlayerScores(List<Match> matches){
+		if(matches.size() == 0) {
+			return;
+		}
+		else {
+			for (Match match : matches) 
+			{
+				Optional<Player> p1 = playerService.getPlayer(match.getPlayer1ID());
+				Optional<Player> p2 = playerService.getPlayer(match.getPlayer2ID());
+				Player player1 = null, player2 = null;
+				int p1OGWins = 0 ,p1OGLosses = 0 ,p2OGWins  = 0 ,p2OGLosses  = 0;
+				if(p1.isPresent())
+				{
+					player1 = p1.get();
+					p1OGWins = player1.getWins();
+					p1OGLosses = player1.getLosses();
+				}
+				
+				if(p2.isPresent())
+				{
+					player2 = p2.get();
+					p2OGWins = player2.getWins();
+					p2OGLosses = player2.getLosses();
+				}
+				
+				System.out.println("Before");
+				System.out.println(player1);
+				System.out.println(player2);
+				if(match.getPlayer1Score() > match.getPlayer2Score()){
+					if(player1 != null)
+					    player1.setWins(p1OGWins-1);
+					if(player2 != null)
+          				player2.setLosses(p2OGLosses-1);
+				}
+				if(match.getPlayer1Score() < match.getPlayer2Score()){
+					if(player2 != null)
+						player2.setWins(p2OGWins-1);
+					if(player1 != null)
+						player1.setLosses(p1OGLosses-1);
+				}
+				System.out.println("After");
+				System.out.println(player1);
+				System.out.println(player2);
+				if(player1 !=null) {
+					playerRepository.save(player1);
+				}
+				if(player2!=null) {
+					playerRepository.save(player2);
+				}
+				
+				
+			}
+		}
+	}
+	private void resetTeamStandings(MatchDaySummary matchSummary) {
+		String ht = matchSummary.getHomeTeam();
+		String at = matchSummary.getAwayTeam();
+		String division = matchSummary.getDivision();
+		List<Team> home = teamRepository.findTeamStandingByDivisionAndName(division,ht);
+		List<Team> away = teamRepository.findTeamStandingByDivisionAndName(division,at);
+		if(home.size() != 0 && away.size() != 0) {
+			Team homeTeam = home.get(0);
+			Team awayTeam = away.get(0);
+			System.out.println("Before");
+			System.out.println(homeTeam);
+			System.out.println(awayTeam);
+			int homeWins = homeTeam.getWins();
+			int homeLosses = homeTeam.getLosses();
+			int homeTies = homeTeam.getTies();
+			int homeOGWinPoints = homeTeam.getWinPoints();
+			int homeOGLossPoints = homeTeam.getLossPoints();
+		
+			int awayWins = awayTeam.getWins();
+			int awayLosses = awayTeam.getLosses();
+			int awayTies = awayTeam.getTies();
+			int awayOGWinPoints = awayTeam.getWinPoints();
+			int awayOGLossPoints = awayTeam.getLossPoints();
+			
+			int homePoints = matchSummary.getHomeTeamPoints();	
+			int awayPoints = matchSummary.getAwayTeamPoints();
+			
+			if(homePoints > awayPoints) {
+				homeTeam.setWins(homeWins-1);
+				awayTeam.setLosses(awayLosses-1);
+			}
+			else if(homePoints < awayPoints) {
+				awayTeam.setWins(awayWins-1);
+				homeTeam.setLosses(homeLosses-1);
+			}
+			else{
+				awayTeam.setTies(awayTies-1);
+				homeTeam.setTies(homeTies-1);
+			}
+			if((awayTeam.getWins() + awayTeam.getLosses() + awayTeam.getTies()) !=0) {
+				awayTeam.setPct((double)awayTeam.getWins()/(awayTeam.getWins() + awayTeam.getLosses() + awayTeam.getTies()) * 100);
+			}
+			else {
+				awayTeam.setPct(0);
+			}
+			if((homeTeam.getWins() + homeTeam.getLosses() + homeTeam.getTies()) !=0) {
+				homeTeam.setPct((double)homeTeam.getWins()/(homeTeam.getWins() + homeTeam.getLosses() + homeTeam.getTies()) * 100);
+			}
+			else {
+				homeTeam.setPct(0);
+			}
+			
+			homeTeam.setWinPoints(homeOGWinPoints - homePoints);
+			homeTeam.setLossPoints(homeOGLossPoints - awayPoints);
+			awayTeam.setWinPoints(awayOGWinPoints - awayPoints);
+			awayTeam.setLossPoints(awayOGLossPoints - homePoints);
+			System.out.println("After");
+			System.out.println(homeTeam);
+			System.out.println(awayTeam);
+			teamRepository.save(homeTeam);
+			teamRepository.save(awayTeam);
+			
+		}
+		
+		
 	}
 }

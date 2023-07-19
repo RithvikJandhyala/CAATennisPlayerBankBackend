@@ -24,7 +24,6 @@ public class User {
 	private String password;
 	private String role;
 	
-	
 	public String getFirstName() {
 		return firstName;
 	}

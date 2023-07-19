@@ -110,7 +110,7 @@ public class Team {
 	@Override
 	public String toString() {
 		return "Team [id=" + id + ", name=" + name + ", wins=" + wins + ", losses=" + losses + ", ties=" + ties
-				+ ", pct=" + pct + ", pointsFor=" + pointsFor + ", pointsAgainst=" + pointsAgainst + ", division="
+				+ ", pct=" + pct + ", winPoints=" + winPoints + ", lossPoints=" + lossPoints + ", pointsFor=" + pointsFor + ", pointsAgainst=" + pointsAgainst + ", division="
 				+ division + "]";
 	}
 }

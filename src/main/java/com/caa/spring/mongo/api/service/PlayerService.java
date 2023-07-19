@@ -10,11 +10,13 @@ import org.springframework.stereotype.Service;
 import com.caa.spring.mongo.api.model.Match;
 import com.caa.spring.mongo.api.model.Player;
 import com.caa.spring.mongo.api.repository.PlayerRepository;
-
+import com.caa.spring.mongo.api.repository.SchoolRepository;
 @Service
 public class PlayerService {
 	@Autowired
 	private PlayerRepository repository;
+	@Autowired
+	private SchoolRepository schoolRepository;
 
 	public String savePlayer(Player player) {
 		int id = generateID(player);
@@ -37,6 +39,8 @@ public class PlayerService {
 		schoolMap.put("BASIS Prescott", 8000);
 		schoolMap.put("Tri-City Christian", 9000);
 		
+		
+		
 		Map<String, Integer> divisionMap = new HashMap<>();
 		divisionMap.put("JH Boys", 0);
 		divisionMap.put("JH Girls", 250);
@@ -54,7 +58,7 @@ public class PlayerService {
 		
 		List <Player> players = repository.findBySchoolAndDivisionAndPlayerType(school, division, playerType);
 		if(players.size() == 0) {
-			id+= schoolMap.get(school);
+			id+= schoolRepository.findByName(school).getID();
 			id+= divisionMap.get(division);
 			id+= playerTypeMap.get(playerType);
 		}
@@ -94,6 +98,7 @@ public class PlayerService {
 	
 	public String deletePlayer(int id) {
 		repository.deleteById(id);
+		System.out.print("delete " + id);
 		return "Player deleted with  " + id;
 	}
 
@@ -142,6 +147,10 @@ public class PlayerService {
 	}
 	public List<Player> getPlayersBySchool(String school, Sort sort){
 		return repository.findBySchool(school,sort);
+	}
+	public String clear() {
+		repository.deleteAll();
+		return "ALL PLAYERS CLEARED";
 	}
 	
 		

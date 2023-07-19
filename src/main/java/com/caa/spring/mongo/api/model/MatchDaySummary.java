@@ -8,8 +8,6 @@ import org.springframework.data.annotation.Id;
 //import jakarta.annotation.
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 
 @Document(collection = "MatchDaySummary")
 public class MatchDaySummary {	

@@ -1,25 +1,30 @@
 package com.caa.spring.mongo.api.controller;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.caa.spring.mongo.api.model.Match;
 import com.caa.spring.mongo.api.model.MatchDaySummary;
 import com.caa.spring.mongo.api.model.User;
 import com.caa.spring.mongo.api.model.Player;
+import com.caa.spring.mongo.api.model.School;
 import com.caa.spring.mongo.api.model.Team;
 import com.caa.spring.mongo.api.service.MatchService;
 import com.caa.spring.mongo.api.service.PlayerService;
+import com.caa.spring.mongo.api.service.SchoolService;
 import com.caa.spring.mongo.api.service.UserService;
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -31,6 +36,8 @@ public class TennisManagementController {
 	private UserService userService;
 	@Autowired
 	private MatchService matchService;
+	@Autowired
+	private SchoolService schoolService;
 	@PostMapping("/addPlayer")
 	public String savePlayer(@RequestBody Player player) {
 		return playerService.savePlayer(player);
@@ -98,9 +105,13 @@ public class TennisManagementController {
 		return matchService.getTeamStandingByDivision(division);
 	}
 	
-	@DeleteMapping("/delete/{id}")
+	@GetMapping("/deletePlayer/{id}")
 	public String deletePlayer(@PathVariable int id) {
 		return playerService.deletePlayer(id);
+	}
+	@GetMapping("/deleteMatchSummary/{id}")
+	public List<Match> deleteMatchSummary(@PathVariable int id) {
+		return matchService.deleteMatchSummary(id);
 	}
 	
 	@PostMapping("/addMatch")
@@ -117,6 +128,10 @@ public class TennisManagementController {
 		return "";
 
 	}
+	@GetMapping("/findAllUsers")
+	public List<User> getUsers(){
+		return userService.getUsers();
+	}
 	
 	@PostMapping("/userlogin")
 	public Optional<User> authenticateUser(@RequestBody User user){
@@ -127,10 +142,42 @@ public class TennisManagementController {
 	public String saveUser(@RequestBody User user) {
 		return userService.saveUser(user);
 	}
-	
+	@GetMapping("/deleteUser/{username}")
+	public String deleteUser(@PathVariable String username) {
+		return userService.deleteUser(username);
+	}
+	@GetMapping("/findAllSchools")
+	public List<School> getSchools(){
+		return schoolService.getSchools();
+	}
 
+	@GetMapping("/deleteSchool/{id}")
+	public String deleteSchool(@PathVariable int id) {
+		return schoolService.deleteSchool(id);
+	}
 	
+	@PostMapping("/schools/add")
+	public int addSchool(@RequestParam("name") String name,
+		 @RequestParam("image") MultipartFile image, Model model
+		 ) 
+	  throws IOException {
+	    int id = schoolService.addSchool(name, image);
+	    return id;
+	}
 	
+	@GetMapping("/schools/{id}")
+	public School getSchool(@PathVariable int id){ 
+		School school = schoolService.getSchool(id);
+	    return school;		
+	}
+	@GetMapping("/resetSeason")
+	public String resetSeason() {
+		playerService.clear();
+		matchService.clear();
+		//userService.clear();
+		schoolService.clear();
+		return "Season reset";
+	}
 	
 	
 }
