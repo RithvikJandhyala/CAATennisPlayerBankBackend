@@ -28,18 +28,6 @@ public class PlayerService {
 	private int generateID(Player player) {
 		
 		int id = 1;
-		Map<String, Integer> schoolMap = new HashMap<>();
-		schoolMap.put("BASIS Scottsdale", 1000);
-		schoolMap.put("BASIS Mesa", 2000);
-		schoolMap.put("BASIS Ahwatukee", 3000);
-		schoolMap.put("Heritage Academy Maricopa", 4000);
-		schoolMap.put("Heritage Academy Mesa", 5000);
-		schoolMap.put("Benjamin Franklin Charter", 6000);
-		schoolMap.put("ALA Gilbert North", 7000);
-		schoolMap.put("BASIS Prescott", 8000);
-		schoolMap.put("Tri-City Christian", 9000);
-		
-		
 		
 		Map<String, Integer> divisionMap = new HashMap<>();
 		divisionMap.put("JH Boys", 0);
