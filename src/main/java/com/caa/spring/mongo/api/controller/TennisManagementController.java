@@ -27,7 +27,7 @@ import com.caa.spring.mongo.api.service.PlayerService;
 import com.caa.spring.mongo.api.service.SchoolService;
 import com.caa.spring.mongo.api.service.UserService;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "https://www.azcaatennis.com")
 @RestController
 public class TennisManagementController {
 	@Autowired
