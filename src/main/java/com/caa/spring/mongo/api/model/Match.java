@@ -11,29 +11,29 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "Match")
 public class Match {	
 	@Id
-        private long id;
-	private String pair;
+        private long id;	
 	private int player1ID;
 	private int player2ID;	
 	private int player1Score;
 	private int player2Score;
 	private String division;
+	private String matchType;
 	private String matchDate;
 	private String homeTeam;
 	private String awayTeam;
 	private String player1Name;
 	private String player2Name;
 	private long matchSummaryID;
-	public Match(long id, String pair, int player1ID, int player2ID, int player1Score, int player2Score, String division,
-			 String matchDate, String homeTeam, String awayTeam, long matchSummaryID) {
+	public Match(long id, int player1ID, int player2ID, int player1Score, int player2Score, String division,
+			String matchType, String matchDate, String homeTeam, String awayTeam, long matchSummaryID) {
 		super();
 		this.id = id;
-		this.pair= pair;
 		this.player1ID = player1ID;
 		this.player2ID = player2ID;
 		this.player1Score = player1Score;
 		this.player2Score = player2Score;
 		this.division = division;
+		this.matchType = matchType;
 		this.matchDate = matchDate;
 		this.homeTeam = homeTeam;
 		this.awayTeam = awayTeam;
@@ -83,13 +83,20 @@ public class Match {
 	@Override
 	public String toString() {
 		return "Match [id=" + id + ", player1ID=" + player1ID + ", player2ID=" + player2ID + ", player1Score="
-				+ player1Score + ", player2Score=" + player2Score + ", division=" + division +  ", matchDate=" + matchDate + ", homeTeam=" + homeTeam + ", awayTeam=" + awayTeam + "]";
+				+ player1Score + ", player2Score=" + player2Score + ", division=" + division + ", matchType="
+				+ matchType + ", matchDate=" + matchDate + ", homeTeam=" + homeTeam + ", awayTeam=" + awayTeam + "]";
 	}
 	public String getDivision() {
 		return division;
 	}
 	public void setDivision(String division) {
 		this.division = division;
+	}
+	public String getMatchType() {
+		return matchType;
+	}
+	public void setMatchType(String matchType) {
+		this.matchType = matchType;
 	}
 	public String getMatchDate() {
 		return matchDate;
@@ -128,12 +135,6 @@ public class Match {
 	}
 	public void setMatchSummaryID(long matchSummaryID) {
 		this.matchSummaryID = matchSummaryID;
-	}
-	public String getPair() {
-		return pair;
-	}
-	public void setPair(String pair) {
-		this.pair = pair;
 	}
 	
 	
