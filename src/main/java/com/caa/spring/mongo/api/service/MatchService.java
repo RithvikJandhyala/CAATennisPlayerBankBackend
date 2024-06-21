@@ -118,6 +118,17 @@ public class MatchService {
 		return id;
 		
 	}
+	private String setMatchPair(long matchID) {
+		if(matchID % 3 == 1) {
+			return "Pair 1";
+		}
+		else if(matchID % 3 == 2) {
+			return "Pair 2";
+		}
+		else  {
+			return "Pair 3";
+		}
+	}
 	public String saveMatches(List<Match> matches) {
 		int homeTeamSummaryPoints = 0;
 		int awayTeamSummaryPoints = 0;
@@ -155,7 +166,7 @@ public class MatchService {
 		    Match match = validMatch.getValue();
 		    currentCount++;
 		    match.setId(currentCount);
-		    
+		    match.setPair(setMatchPair(match.getId()));
 		    if(seq == 0)
 			{
 					if(match.getPlayer1Score() > match.getPlayer2Score()) {
